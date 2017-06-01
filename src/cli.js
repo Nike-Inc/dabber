@@ -82,7 +82,7 @@ function lambdaCleanupOptions (yargs) {
       demandOption: false
     })
     .option('p', {
-      alias: 'aws-profile',
+      alias: 'profile',
       desc: 'aws profile to use from the credentials chain',
       default: 'default'
     })
