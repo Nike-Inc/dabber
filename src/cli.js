@@ -90,6 +90,11 @@ function lambdaCleanupOptions (yargs) {
 
 function lambdaDeployOptions (yargs) {
   return lambdaCleanupOptions(yargs)
+    .option('R', {
+      alias: 'region',
+      desc: 'Region to deploy the lambda.',
+      demandOption: true
+    })
     .option('r', {
       alias: 'role',
       desc: 'IAM Role for the lambda. Can be full ARN or just Role Name',
