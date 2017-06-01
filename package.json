@@ -1,0 +1,48 @@
+{
+  "name": "dabber",
+  "version": "0.1.0",
+  "description": "dynamo automated backup and restore",
+  "main": "src/index.js",
+  "scripts": {
+    "style": "standard \"src/**/*.js\" \"test/**/*.js\" | snazzy",
+    "style:fix": "standard \"src/**/*.js\" \"test/**/*.js\"--fix",
+    "test": "npm run style && npm run test:unit",
+    "test:unit": "blue-tape test/**/**.js | ./node_modules/.bin/tap-spec",
+    "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.js' -c \"npm run test:unit -s\""
+  },
+  "bin": {
+    "dabber": "src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "engines": {
+    "node": ">=4"
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.nike.com:ngp/dabber.git"
+  },
+  "author": "Tim Kye",
+  "license": "MIT",
+  "dependencies": {
+    "@nike/lambda-node-logger": "^0.2.3",
+    "aws-sdk": "^2.60.0",
+    "co": "^4.6.0",
+    "dynamodb-backup-restore": "^0.2.11",
+    "fuse-box": "^2.0.12",
+    "pify": "^3.0.0",
+    "yargs": "^8.0.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "blue-tape": "^1.0.0",
+    "chokidar-cli": "^1.2.0",
+    "snazzy": "^7.0.0",
+    "standard": "^10.0.2",
+    "tap-spec": "^4.1.1"
+  }
+}
