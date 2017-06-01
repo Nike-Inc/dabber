@@ -1,12 +1,10 @@
 'use strict'
 
-const fs = require('fs')
-const promisify = require('pify')
 const co = require('co')
 const AWS = require('aws-sdk')
-const lambda = new AWS.Lambda({ apiVersion: '2015-03-31' })
-
-const createLambdaFunction = promisify(lambda.createFunction.bind(lambda))
+const fuse = require('./fuse')
+const promisify = require('pify')
+const zip = require('adm-zip')
 
 module.exports = {
   deploy,
@@ -19,42 +17,46 @@ function scheduleBackup (options) {
 }
 
 function deploy (options) {
-  // Build zip file
-  let zipBuffer
-  // lookup arn if only given role
-  let roleArn
-  var params = {
-    Code: { ZipFile: zipBuffer },
-    Description: 'Dabber: Scheduled Dynamo Backups',
-    FunctionName: options.name,
-    Handler: 'lambda,handler',
-    MemorySize: 128,
-    Publish: true,
-    Role: roleArn,
-    Runtime: 'nodejs6.10',
-    Timeout: 360
-  }
-  return co(function * () {
-    let result = yield createLambdaFunction(params)
+  AWS.config.update({ region: options.region })
+  const lambda = new AWS.Lambda({ apiVersion: '2015-03-31' })
+  const iam = new AWS.IAM({ apiVersion: '2010-05-08' })
+  const getRole = promisify(iam.getRole.bind(iam))
+  const createLambdaFunction = promisify(lambda.createFunction.bind(lambda))
 
-    /*
-    data = {
-      CodeSha256: "",
-      CodeSize: 123,
-      Description: "",
-      FunctionArn: "arn:aws:lambda:us-west-2:123456789012:function:MyFunction",
-      FunctionName: "MyFunction",
-      Handler: "source_file.handler_name",
-      LastModified: "2016-11-21T19:49:20.006+0000",
-      MemorySize: 128,
-      Role: "arn:aws:iam::123456789012:role/service-role/role-name",
-      Runtime: "nodejs4.3",
-      Timeout: 123,
-      Version: "1",
-      VpcConfig: {
-      }
+  return co(function * () {
+    const filePath = yield fuse.bundle.run().then(producer => {
+      return producer.bundles.get(fuse.bundleName).process.filePath
+    })
+
+    let roleArn = options.role
+    if(roleArn.indexOf('arn:aws:iam') === -1) {
+      // lookup arn if only given role name
+      roleArn = yield getRole({ RoleName: options.role }).then(result => {
+        return result.Role && result.Role.Arn
+      })
     }
-    */
+
+    var zipper = new zip();
+    zipper.addLocalFile(filePath);
+
+    var params = {
+      Code: { ZipFile: zipper.toBuffer() },
+      Description: 'Dabber: Scheduled Dynamo Backups',
+      FunctionName: options.name,
+      Handler: 'lambda.handler',
+      MemorySize: 128,
+      Publish: true,
+      Role: roleArn,
+      Runtime: 'nodejs6.10',
+      Timeout: 300
+    }
+
+    let result = yield createLambdaFunction(params).catch(err => {
+      console.log(err)
+      throw err
+    })
+
+    console.log('Dabber Lambda Successfully Created', result)
   })
 }
 
