@@ -17,9 +17,9 @@ function scheduleBackup (options) {
 }
 
 function deploy (options) {
-  AWS.config.update({ region: options.region })
-  const lambda = new AWS.Lambda({ apiVersion: '2015-03-31' })
-  const iam = new AWS.IAM({ apiVersion: '2010-05-08' })
+  const lambda = new AWS.Lambda({ apiVersion: '2015-03-31', region: options.region })
+  const iam = new AWS.IAM({ apiVersion: '2010-05-08', region: options.region })
+
   const getRole = promisify(iam.getRole.bind(iam))
   const createLambdaFunction = promisify(lambda.createFunction.bind(lambda))
 
