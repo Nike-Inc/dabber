@@ -3,13 +3,14 @@ const {JSONPlugin, FuseBox} = require("fuse-box");
 
 let fuseBox = FuseBox.init({
   cache: false,
+  homeDir: `../src/`,
+  output: `../build/$name.js`,
+  ignoreModules: ['aws-sdk'],
+  globals: { 'lambda': '*' },
   package: {
     name: 'lambda',
     main: 'lambda.js'
   },
-  homeDir: `../src/`,
-  output: `../build/$name.js`,
-  globals: { 'lambda': '*' },
   plugins : [
     JSONPlugin()
   ]
@@ -18,7 +19,7 @@ let fuseBox = FuseBox.init({
 // Remove the AWS SDK from the lambda.
 // This no longer creates the bundle itself,
 // you still have to call fuseBox.run()
-fuseBox.bundle(bundleName).instructions(`lambda.js - aws-sdk`)
+fuseBox.bundle(bundleName).instructions(`>lambda.js`).target('server')
 
 module.exports = {
   bundleName,
