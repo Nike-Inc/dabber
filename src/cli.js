@@ -18,15 +18,15 @@ require('yargs')
   })
   .command({
     command: 'schedule-backup',
-    desc: '',
-    builder: (yargs) => backupOptions(yargs)
-      .option('s', {
-        alias: 'schedule',
-        desc: 'Schedule a table for backups using the dabber lambda',
-        choices: ['h', 'hourly', 'b', 'business-hours', 'd', 'daily'],
-        demandOption: true
-      }),
+    desc: 'Create a backup schedule for a dynamo table',
+    builder: scheduleOptions,
     handler: dabber.scheduleBackup
+  })
+  .command({
+    command: 'unschedule',
+    desc: 'Delete a backup schedule for a dynamo table',
+    builder: scheduleOptions,
+    handler: dabber.unscheduleBackup
   })
   .command({
     command: 'deploy',
@@ -54,7 +54,7 @@ function backupOptions (yargs) {
     .option('p', {
       alias: 's3Prefix',
       demandOption: true,
-      describe: 'The folder path to store the backup in (can be deep, e.g. "app/data/backups")'
+      describe: 'The folder path to store the backup in (can be deep, e.g. "app/data/backups"). Datestamp and table name will be appended.'
     })
     .option('r', {
       alias: 's3Region',
@@ -70,6 +70,22 @@ function backupOptions (yargs) {
       alias: 'dbRegion',
       demandOption: false,
       describe: 'Region of the dynamo table. Defaults to S3 region if ommited'
+    })
+}
+
+function scheduleOptions (yargs) {
+  return backupOptions(yargs)
+    .option('s', {
+      alias: 'schedule',
+      desc: 'Schedule a table for backups using the dabber lambda',
+      choices: ['h', 'hourly', 'bh', 'business-hours', 'd', 'daily'],
+      demandOption: true
+    })
+    .option('n', {
+      alias: 'name',
+      desc: 'name for the dabber lambda',
+      default: 'dabber',
+      demandOption: false
     })
 }
 

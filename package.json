@@ -1,5 +1,5 @@
 {
-  "name": "dabber",
+  "name": "@nike/dabber",
   "version": "0.1.0",
   "description": "dynamo automated backup and restore",
   "main": "src/index.js",
@@ -35,7 +35,9 @@
     "co": "^4.6.0",
     "dynamodb-backup-restore": "^0.2.11",
     "fuse-box": "^2.0.2-beta.1",
+    "node-zip": "^1.1.1",
     "pify": "^3.0.0",
+    "uuid": "^3.0.1",
     "yargs": "^8.0.1"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 const bundleName = 'lambda'
-const {JSONPlugin, FuseBox} = require("fuse-box");
+const {JSONPlugin, FuseBox} = require('fuse-box')
 
 let fuseBox = FuseBox.init({
   cache: false,
@@ -11,7 +11,7 @@ let fuseBox = FuseBox.init({
     name: 'lambda',
     main: 'lambda.js'
   },
-  plugins : [
+  plugins: [
     JSONPlugin()
   ]
 })
