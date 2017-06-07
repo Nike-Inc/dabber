@@ -180,5 +180,11 @@ function deploy (options) {
 }
 
 function removeLambda (options) {
+  return co(function * () {
+    const lambda = new AWS.Lambda({ apiVersion: '2015-03-31', region: options.region })
+    const deleteFunction = promisify(lambda.deleteFunction.bind(lambda))
 
+    yield deleteFunction({ FunctionName: options.name })
+    console.log(`${options.name} successfully deleted`)
+  })
 }

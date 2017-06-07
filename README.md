@@ -141,7 +141,7 @@ Options:
 
 **Example**
 ```
-dabber deploy -R us-west-2 -r dabber # this is an IAM role that you need to create, see the lambda setup section
+dabber deploy -R us-west-2 -r dabber # this is an IAM role that you need to create, see the lambda permissions section
 ```
 
 ## Cleanup (COMING SOON)
@@ -149,14 +149,17 @@ Remove the dabber lambda
 ```
 Options:
   --help         Show help                                             [boolean]
+  -R, --region   Region to deploy the lambda.                         [required]
   -n, --name     name for the dabber lambda                  [default: "dabber"]
   -p, --profile  aws profile to use from the credentials chain
                                                             [default: "default"]
+
+Missing required argument: R
 ```
 
 **Example**
 ```
-dabber cleanup
+dabber cleanup -R us-west-2
 ```
 
 ## Schedule Backup

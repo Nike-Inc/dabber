@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 const dabber = require('./dabber')
 const dynamo = require('./dynamo')
+const inquirer = require('inquirer')
 
 // eslint-disable-next-line no-unused-expressions
 require('yargs')
@@ -38,7 +39,16 @@ require('yargs')
     command: 'cleanup',
     desc: 'Delete the dabber lambda function',
     builder: lambdaCleanupOptions,
-    handler: dabber.removeLambda
+    handler: (options) => {
+      inquirer.prompt([{ type: 'confirm', name: 'proceed', message: `This will remove the Lambda function: ${options.name}.\nAre you sure you want to do this?`, default: false }])
+      .then((answers) => {
+        if (!answers.proceed) return
+        dabber.removeLambda(options)
+      })
+      .catch(err => {
+        console.error(err)
+      })
+    }
   })
   .demandCommand(1, 'Must provide at least one command')
   .help()
@@ -91,6 +101,11 @@ function scheduleOptions (yargs) {
 
 function lambdaCleanupOptions (yargs) {
   return yargs
+    .option('R', {
+      alias: 'region',
+      desc: 'Region to deploy the lambda.',
+      demandOption: true
+    })
     .option('n', {
       alias: 'name',
       desc: 'name for the dabber lambda',
