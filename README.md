@@ -144,7 +144,7 @@ Options:
 dabber deploy -R us-west-2 -r dabber # this is an IAM role that you need to create, see the lambda permissions section
 ```
 
-## Cleanup (COMING SOON)
+## Cleanup
 Remove the dabber lambda
 ```
 Options:
