@@ -13,7 +13,8 @@ module.exports = {
   scheduleBackup,
   unscheduleBackup,
   deploy,
-  removeLambda
+  removeLambda,
+  setupIamRole
 }
 
 var log = (...args) => console.log(...args.map(a => require('util').inspect(a, { colors: true, depth: null }))) // eslint-disable-line
@@ -30,10 +31,9 @@ function scheduleBackup (options) {
   let listRules = promisify(events.listRules.bind(events))
   let putRule = promisify(events.putRule.bind(events))
   let putTargets = promisify(events.putTargets.bind(events))
+  let getTargets = promisify(events.listTargetsByRule.bind(events))
 
   return co(function * () {
-    let target = yield createTarget(options)
-
     let rulesNeeded = getRules(options)
     let rules = yield getPages(listRules, null, 'Rules')
     for (let rule of rulesNeeded) {
@@ -46,15 +46,36 @@ function scheduleBackup (options) {
         })
       }
 
-      yield putTargets({
-        Rule: rule.Name,
-        Targets: [target]
-      })
+      let targetsResult = yield getTargets({ Rule: rule.Name })
+      let targets = targetsResult.Targets
+
+      // Update existing target
+      if (targets && targets.length) {
+        log('updating target')
+        let target = targets[0]
+        let input = JSON.parse(target.Input)
+        input.schedules.push(createScheduleTrigger(options))
+        target.Input = JSON.stringify(input)
+
+        yield putTargets({
+          Rule: rule.Name,
+          Targets: [target]
+        })
+      } else {
+        let target = yield createTarget(options)
+
+        yield putTargets({
+          Rule: rule.Name,
+          Targets: [target]
+        })
+      }
     }
   }).catch(error => {
     console.error(error)
   })
 }
+
+// 8192
 
 function unscheduleBackup (options) {
   // let listRuleTargets = promisify(events.listTargetsByRule.bind(events))
@@ -65,10 +86,7 @@ function getRules (options) {
   if (options.s === 'h' || options.s === 'hourly') rulesNeeded.push({ Name: 'Dabber-hourly', schedule: schedules['hourly'] })
   else if (options.s === 'd' || options.s === 'daily') rulesNeeded.push({ Name: 'Dabber-daily', schedule: schedules['daily'] })
   else if (options.s === 'bh' || options.s === 'business-hours') {
-    rulesNeeded.push(
-      { Name: 'Dabber-business1', schedule: schedules['business1'] },
-      { Name: 'Dabber-business2', schedule: schedules['business2'] }
-    )
+    rulesNeeded.push({ Name: 'Dabber-business1', schedule: schedules['business1'] }, { Name: 'Dabber-business2', schedule: schedules['business2'] })
   }
   return rulesNeeded
 }
@@ -78,20 +96,27 @@ function createTarget (options) {
     let lambda = yield getLambdaFunction(options.s3Region, options.name)
 
     assert(lambda, `Unable to find lambda named ${options.name}. Have you deployed yet?`)
+    let input = {
+      type: 'run-schedule',
+      schedules: [createScheduleTrigger(options)]
+    }
 
     return {
       Arn: lambda.FunctionArn,
       Id: uuid(),
-      Input: JSON.stringify({
-        type: 'backup',
-        s3Bucket: options.s3Bucket,
-        s3Prefix: options.s3Prefix,
-        s3Region: options.s3Region,
-        dbTable: options.dbTable,
-        dbRegion: options.dbRegion || options.s3Region
-      })
+      Input: JSON.stringify(input)
     }
   })
+}
+
+function createScheduleTrigger (options) {
+  return {
+    s3Bucket: options.s3Bucket,
+    s3Prefix: options.s3Prefix,
+    s3Region: options.s3Region,
+    dbTable: options.dbTable,
+    dbRegion: options.dbRegion || options.s3Region
+  }
 }
 
 function getPages (fn, params, prop) {
@@ -172,7 +197,7 @@ function deploy (options) {
 
       result = yield createLambdaFunction(params)
     }
-    console.log('Dabber Lambda Successfully Created', result)
+    log('Dabber Lambda Successfully Created\n', { FunctionArn: result.FunctionArn, Role: result.Role })
   }).catch(err => {
     console.log(err)
     throw err
@@ -186,5 +211,72 @@ function removeLambda (options) {
 
     yield deleteFunction({ FunctionName: options.name })
     console.log(`${options.name} successfully deleted`)
+  })
+}
+
+const makeTrustPolicy = (region) => {
+  let base = {'Version': '2012-10-17', 'Statement': [{'Effect': 'Allow', 'Principal': {'Service': ['ec2.amazonaws.com', `states.${region}.amazonaws.com`, 'events.amazonaws.com', 'lambda.amazonaws.com']}, 'Action': 'sts:AssumeRole'}]}
+  return JSON.stringify(base)
+}
+const accessPolicy = {
+  'Version': '2012-10-17',
+  'Statement': [{
+    'Effect': 'Allow',
+    'Action': [
+      's3:GetObject',
+      's3:GetObjectVersion',
+      's3:PutObject',
+      'dynamodb:BatchGetItem',
+      'dynamodb:GetItem',
+      'dynamodb:Query',
+      'dynamodb:Scan',
+      'dynamodb:DescribeTable',
+      'lambda:InvokeFunction',
+      'logs:*'
+    ],
+    'Resource': '*'
+  }]
+}
+
+function setupIamRole (options) {
+  return co(function * () {
+    const iam = new AWS.IAM({ apiVersion: '2010-05-08', region: options.region })
+    const createRole = promisify(iam.createRole.bind(iam))
+    const putRolePolicy = promisify(iam.putRolePolicy.bind(iam))
+    const getRole = promisify(iam.getRole.bind(iam))
+
+    let trustPolicy = makeTrustPolicy(options.region)
+
+    let role
+    try {
+      role = yield getRole({ RoleName: options.name })
+    } catch (e) {
+      if (e.toString().indexOf('NoSuchEntity') === -1) throw e
+    }
+
+    if (role) {
+      log('role already exists', role)
+      return
+    }
+
+    let roleParams = {
+      AssumeRolePolicyDocument: trustPolicy,
+      RoleName: options.name,
+      Description: 'Role policy for Dabber Lambda'
+    }
+
+    // log(roleParams)
+
+    role = yield createRole(roleParams)
+
+    yield putRolePolicy({
+      PolicyDocument: JSON.stringify(accessPolicy),
+      PolicyName: 'Dabber-Inline-Policy',
+      RoleName: options.name
+    })
+
+    console.log(`role: ${options.name} successfully created`)
+  }).catch(e => {
+    console.error(e)
   })
 }

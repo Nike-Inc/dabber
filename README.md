@@ -7,15 +7,13 @@ Dabber is a Node CLI tool and AWS Lambda that helps you work with Dynamo. The CL
 * Restore to a Dynamo table from a backup
   * Give you a list of backups to select from (COMING SOON)
 * Deploy a Dabber lambda
-* Create an IAM role with the necessary permissions for the Dabber Lambda (COMING SOON)
+* Create an IAM role with the necessary permissions for the Dabber Lambda
 * Create Backup Schedules as CloudWatch Rules that trigger the Dabber lambda
-  * Schedules require the Dabber lambda, and can `be
+  * Schedules require the Dabber lambda, and can be
     * Daily
     * Hourly
     * Business Hourly (8AM-6PM, PST, Hourly)
 * Remove Backup Schedules (COMING SOON)
-
-Once, installed the cli tool should be self-explanatory. Just run `dabber` to see the options.
 
 # Installation
 
@@ -37,7 +35,7 @@ registry=http://artifactory.nike.com/artifactory/api/npm/npm-nike
 Dabber is two pieces: a CLI and a Lambda. The CLI can perform one-off backups and restores from your machine. It can also deploy a Lambda and create CloudWatch rules that trigger the lambda to perform scheduled backups. You only need to deploy ***one*** lambda for Dabber, per account; after that you can create as many backup schedules as you want against the same lambda, since each schedule is a trigger that describes the backup operation for the lambda.
 
 ## Lambda Permissions
-For the Dabber Lambda to work proprely it needs an IAM role with access to S3, Lambda, Events, and Dynamo. The easiest way to set this up is to create a role in IAM and write the following as an inline policy.
+For the Dabber Lambda to work proprely it needs an IAM role with access to S3, Lambda, Events, and Dynamo. This role can be created with the CLI `setup-iam-role` command.
 
 ```language-json
 {
@@ -53,6 +51,8 @@ For the Dabber Lambda to work proprely it needs an IAM role with access to S3, L
                 "dynamodb:GetItem",
                 "dynamodb:Query",
                 "dynamodb:Scan",
+                "dynamodb:DescribeTable",
+                "lambda:InvokeFunction",
                 "logs:*"
             ],
             "Resource": "*"
@@ -124,6 +124,20 @@ Options:
 **Example**
 ```
 dabber backup -b "niketech-dynamo-backups" -p "dev-devportal/2017-06-06T15:42:23.739Z/DevPortal_Dev_Users" -r "us-west-2" -t "DevPortal_Dev_Users"
+```
+
+## Setup Iam Role
+Create the IAM role needed by the dabber lambda
+```
+Options:
+  --help        Show help                                              [boolean]
+  -R, --region  Region to setup the IAM role.                         [required]
+  -n, --name    name for the dabber lambda                   [default: "dabber"]
+```
+
+***Example***
+```
+dabber setup-iam-role -R us-west-2
 ```
 
 ## Deploy

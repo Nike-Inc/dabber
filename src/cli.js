@@ -36,6 +36,12 @@ require('yargs')
     handler: dabber.deploy
   })
   .command({
+    command: 'setup-iam-role',
+    desc: 'Create an IAM role with an inline policy that can be used by the Dabber lambda',
+    builder: setupRoleOptions,
+    handler: dabber.setupIamRole
+  })
+  .command({
     command: 'cleanup',
     desc: 'Delete the dabber lambda function',
     builder: lambdaCleanupOptions,
@@ -53,6 +59,21 @@ require('yargs')
   .demandCommand(1, 'Must provide at least one command')
   .help()
   .argv
+
+function setupRoleOptions (yargs) {
+  return yargs
+    .option('R', {
+      alias: 'region',
+      desc: 'Region to setup the IAM role.',
+      demandOption: true
+    })
+    .option('n', {
+      alias: 'name',
+      desc: 'name for the dabber lambda',
+      default: 'dabber',
+      demandOption: false
+    })
+}
 
 function backupOptions (yargs) {
   return yargs
@@ -129,6 +150,7 @@ function lambdaDeployOptions (yargs) {
     .option('r', {
       alias: 'role',
       desc: 'IAM Role for the lambda. Can be full ARN or just Role Name',
+      default: 'dabber',
       demandOption: true
     })
 }

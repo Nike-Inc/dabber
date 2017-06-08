@@ -1,0 +1,25 @@
+{
+  "type": "backup",
+  "s3Bucket": "niketech-dynamo-backups",
+  "s3Prefix": "dev-devportal",
+  "s3Region": "us-west-2",
+  "dbTable": "DevPortal_Dev_Users",
+  "dbRegion": "us-west-2"
+}
+
+{
+  "type": "run-schedule",
+  "schedules": [{
+    "s3Bucket": "niketech-dynamo-backups",
+    "s3Prefix": "dev-devportal",
+    "s3Region": "us-west-2",
+    "dbTable": "DevPortal_Dev_Users",
+    "dbRegion": "us-west-2"
+  }, {
+    "s3Bucket": "niketech-dynamo-backups",
+    "s3Prefix": "dev-devportal",
+    "s3Region": "us-west-2",
+    "dbTable": "DevPortal_Dev_Invites",
+    "dbRegion": "us-west-2"
+  }]
+}
