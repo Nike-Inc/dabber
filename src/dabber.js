@@ -28,6 +28,8 @@ const schedules = {
 
 function scheduleBackup (options) {
   let events = new AWS.CloudWatchEvents({ apiVersion: '2015-10-07', region: options.s3Region })
+  let lambda = new AWS.Lambda({ apiVersion: '2015-03-31', region: options.s3Region })
+  let addPermission = promisify(lambda.addPermission.bind(lambda))
   let listRules = promisify(events.listRules.bind(events))
   let putRule = promisify(events.putRule.bind(events))
   let putTargets = promisify(events.putTargets.bind(events))
@@ -37,13 +39,16 @@ function scheduleBackup (options) {
     let rulesNeeded = getRules(options)
     let rules = yield getPages(listRules, null, 'Rules')
     for (let rule of rulesNeeded) {
-      // log(rule)
-      if (!rules.find(r => r.Name === rule.Name)) {
-        yield putRule({
+      let existingRule = rules.find(r => r.Name === rule.Name)
+      if (!existingRule) {
+        existingRule = yield putRule({
           Name: rule.Name,
           Description: `Dynamo automated backup rule`,
           ScheduleExpression: rule.schedule
         })
+        rule.RuleArn = existingRule.RuleArn
+      } else {
+        rule.RuleArn = existingRule.Arn
       }
 
       let targetsResult = yield getTargets({ Rule: rule.Name })
@@ -69,13 +74,24 @@ function scheduleBackup (options) {
           Targets: [target]
         })
       }
+      try {
+        // Set lambda permission for rule
+        yield addPermission({
+          Action: 'lambda:InvokeFunction',
+          FunctionName: options.name,
+          Principal: 'events.amazonaws.com',
+          SourceArn: rule.RuleArn,
+          StatementId: rule.Name
+        })
+      } catch (e) {
+        // Swallow already exists errors, its easier and faster than checking the policy
+        if (e.toString().indexOf('provided already exists') === -1) throw e
+      }
     }
   }).catch(error => {
     console.error(error)
   })
 }
-
-// 8192
 
 function unscheduleBackup (options) {
   // let listRuleTargets = promisify(events.listTargetsByRule.bind(events))
@@ -215,7 +231,14 @@ function removeLambda (options) {
 }
 
 const makeTrustPolicy = (region) => {
-  let base = {'Version': '2012-10-17', 'Statement': [{'Effect': 'Allow', 'Principal': {'Service': ['ec2.amazonaws.com', `states.${region}.amazonaws.com`, 'events.amazonaws.com', 'lambda.amazonaws.com']}, 'Action': 'sts:AssumeRole'}]}
+  let base = {
+    'Version': '2012-10-17',
+    'Statement': [{
+      'Effect': 'Allow',
+      'Principal': { 'Service': ['ec2.amazonaws.com', `states.${region}.amazonaws.com`, 'events.amazonaws.com', 'lambda.amazonaws.com'] },
+      'Action': ['sts:AssumeRole', 'lambda:InvokeFunction']
+    }]
+  }
   return JSON.stringify(base)
 }
 const accessPolicy = {

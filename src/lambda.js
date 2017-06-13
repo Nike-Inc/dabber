@@ -9,10 +9,11 @@ exports.handler = logger(handler)
 function handler (event, context, callback) {
   context.callbackWaitsForEmptyEventLoop = false
   logger.restoreConsoleLog()
+  logger.log('event', event)
 
   switch (event.type) {
     case 'run-schedule':
-      logger.info('running schedules', event)
+      logger.info('running schedules')
       return runSchedule(event, context, callback)
     case 'backup':
       logger.info('performing dynamo backup', event.dbTable)
@@ -30,6 +31,7 @@ function handler (event, context, callback) {
 function runSchedule (event, context, callback) {
   let arn = context.invokedFunctionArn
   let region = arn.split(':')[3]
+  let datestamp = new Date().toISOString()
 
   // invokedFunctionArn: 'arn:aws:lambda:us-west-2:539783510382:function:dabber'
 
@@ -41,10 +43,13 @@ function runSchedule (event, context, callback) {
     FunctionName: arn,
     InvocationType: 'Event',
     LogType: 'None',
-    Payload: JSON.stringify(Object.assign({ type: 'backup' }, schedule))
+    Payload: JSON.stringify(Object.assign({ type: 'backup', datestamp: datestamp }, schedule))
   }))
 
   Promise.all(schedules)
-    .then(() => callback(null, 'done'))
+    .then(result => {
+      logger.info('schedule done', result)
+      callback(null, 'done')
+    })
     .catch(err => callback(err))
 }
