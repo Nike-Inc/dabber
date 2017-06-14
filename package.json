@@ -1,6 +1,6 @@
 {
   "name": "@nike/dabber",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "dynamo automated backup and restore",
   "main": "src/index.js",
   "scripts": {
