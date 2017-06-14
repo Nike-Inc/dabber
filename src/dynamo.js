@@ -1,7 +1,7 @@
 'use strict'
 
 const Backup = require('dynamodb-backup-restore/lib/backup')
-const Restore = require('dynamodb-backup-restore/lib/backup')
+const Restore = require('dynamodb-backup-restore/lib/restore')
 
 module.exports = {
   backup,
@@ -25,7 +25,6 @@ function restore (options) {
     S3Prefix: options.s3Prefix,
     S3Region: options.s3Region,
     DbTable: options.dbTable,
-    DbRegion: options.dbRegion || options.s3Region,
-    RestoreTime: options.restoreTime
+    DbRegion: options.dbRegion || options.s3Region
   })
 }

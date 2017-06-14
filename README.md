@@ -5,7 +5,7 @@ Dabber is a Node CLI tool and AWS Lambda that helps you work with Dynamo. The CL
 
 * Backup Dynamo tables
 * Restore to a Dynamo table from a backup
-  * Give you a list of backups to select from (COMING SOON)
+  * Give you a list of backups to select from
 * Deploy a Dabber lambda
 * Create an IAM role with the necessary permissions for the Dabber Lambda
 * Create Backup Schedules as CloudWatch Rules that trigger the Dabber lambda
@@ -117,13 +117,27 @@ Options:
                   "app/data/backups"). Datestamp and table name will be
                   appended.                                           [required]
   -r, --s3Region  Region of the S3 Bucket                             [required]
-  -t, --dbTable   Dynamo Table to Backup                              [required]
+  -t, --dbTable   Dynamo Table to Restore to                          [required]
+  -T, --s3Table   The name of the table that was backed up to s3. Will filter
+                  the restore options                              [default: ""]
   -R, --dbRegion  Region of the dynamo table. Defaults to S3 region if ommited
+  -l, --list      List available backups from the given prefix
 ```
 
-**Example**
+**Examples**
+Known backup
 ```
 dabber backup -b "niketech-dynamo-backups" -p "dev-devportal/2017-06-06T15:42:23.739Z/DevPortal_Dev_Users" -r "us-west-2" -t "DevPortal_Dev_Users"
+```
+
+Select backup from List
+```
+dabber restore -b "niketech-dynamo-backups" -p "devportal/prod" -r "us-west-2" -t "DevPortal_Service_catalog_UserTeamProject" -l
+```
+
+Select Backup from List with filter
+```
+dabber restore -b "niketech-dynamo-backups" -p "devportal/prod" -r "us-west-2" -t "DevPortal_Service_catalog_UserTeamProject" -T "DevPortal_Prod_UserTeamProject" -l
 ```
 
 ## Setup Iam Role
