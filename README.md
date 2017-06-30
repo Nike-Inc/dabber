@@ -20,14 +20,7 @@ Dabber is a Node CLI tool and AWS Lambda that helps you work with Dynamo. The CL
 Install with npm
 
 ```
-npm i @nike/dabber -g
-```
-
-> Until this package is open-sourced, you must configure the @nike scope with the CDT artifactory. Put this in an `.npmrc` file in your project root
-
-```
-registry=http://artifactory.nike.com/artifactory/api/npm/npm-nike
-@nike:registry=http://artifactory.nike.com/artifactory/api/npm/npm-nike/
+npm install dabber -g
 ```
 
 # How to use

@@ -1,5 +1,5 @@
 {
-  "name": "@nike/dabber",
+  "name": "dabber",
   "version": "0.4.0",
   "description": "dynamo automated backup and restore",
   "main": "src/index.js",
@@ -24,12 +24,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.nike.com:ngp/dabber.git"
+    "url": "git@github.com:Nike-Inc/dabber.git"
   },
   "author": "Tim Kye",
   "license": "MIT",
   "dependencies": {
-    "@nike/lambda-node-logger": "^0.2.3",
+    "lambda-node-logger": "^0.2.3",
     "adm-zip": "^0.4.7",
     "aws-sdk": "^2.60.0",
     "co": "^4.6.0",
