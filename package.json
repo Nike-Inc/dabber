@@ -27,7 +27,7 @@
     "url": "git@github.com:Nike-Inc/dabber.git"
   },
   "author": "Tim Kye",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "lambda-node-logger": "^0.2.3",
     "adm-zip": "^0.4.7",
