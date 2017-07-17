@@ -1,6 +1,6 @@
 'use strict'
 
-const logger = require('@nike/lambda-node-logger')
+const logger = require('lambda-logger-node')
 const dynamo = require('./dynamo')
 const promisify = require('pify')
 
@@ -32,8 +32,6 @@ function runSchedule (event, context, callback) {
   let arn = context.invokedFunctionArn
   let region = arn.split(':')[3]
   let datestamp = new Date().toISOString()
-
-  // invokedFunctionArn: 'arn:aws:lambda:us-west-2:539783510382:function:dabber'
 
   const AWS = require('aws-sdk')
   const lambda = new AWS.Lambda({ apiVersion: '2015-03-31', region: region })
