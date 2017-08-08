@@ -75,13 +75,13 @@ workflows:
           filters:
               tags:
                   only: /^v.*/
-              # branches:
-              #     ignore: /.*/
+              branches:
+                  ignore: /.*/
       - release:
           requires:
             - package
           filters:
               tags:
                   only: /^v.*/
-            # branches:
-            #       ignore: /.*/
+            branches:
+                  ignore: /.*/
