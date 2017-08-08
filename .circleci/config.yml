@@ -3,10 +3,10 @@ defaults: &defaults
   docker:
     - image: nikengp/node6:v0.1
 version_filter: &version_filter
-  tags:
-    only: /v.*/
-  branches:
-    ignore: /.*/
+    tags:
+      only: /^v.*/
+    branches:
+      ignore: /.*/
 version: 2
 jobs:
   build:
@@ -63,6 +63,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only: /.*/    
       - package:
           requires:
             - build
