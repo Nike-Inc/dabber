@@ -37,21 +37,27 @@ jobs:
       #     prefix: test-results
       # - store_test_results:
       #     path: test-results
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - app
   package:
     <<: *defaults
     steps:
+      - attach_workspace:
+          at: ~/app
       - run:
           name: build-binaries
           command: npm run build
       - persist_to_workspace:
-          root: ~/app
+          root: ~/
           paths:
-            - bin
+            - app
   release:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: ~/app/bin
+          at: ~/app
       - run:
           name: publish release
           command: ghr -u Nike-Inc -r dabber $CIRCLE_TAG bin/
