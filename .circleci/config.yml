@@ -45,7 +45,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: ~/app
+          at: ~/
       - run:
           name: build-binaries
           command: npm run build
@@ -57,7 +57,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-          at: ~/app
+          at: ~/
       - run:
           name: publish release
           command: ghr -u Nike-Inc -r dabber $CIRCLE_TAG bin/
