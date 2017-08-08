@@ -61,17 +61,21 @@ workflows:
     jobs:
       - build:
           filters:
-            tags:
-              only: /.*/
-            branches:
-              only: /.*/    
+              tags:
+                  only: /.*/
       - package:
           requires:
             - build
           filters:
-            <<: *version_filter
+              tags:
+                  only: /^v.*/
+              # branches:
+              #   ignore: /.*/
       - release:
           requires:
             - package
           filters:
-            <<: *version_filter
+              tags:
+                  only: /^v.*/
+            # branches:
+            #   ignore: /.*/
