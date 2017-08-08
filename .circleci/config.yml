@@ -2,9 +2,9 @@ defaults: &defaults
   working_directory: ~/app
   docker:
     - image: nikengp/node6:v0.1
-tag_filter: &tag_filter
+version_filter: &version_filter
   tags:
-    only: /.v*/
+    only: /v.*/
   branches:
     ignore: /.*/
 version: 2
@@ -64,9 +64,9 @@ workflows:
           requires:
             - build
           filters:
-            <<: *tag_filter
+            <<: *version_filter
       - release:
           requires:
             - package
           filters:
-            <<: *tag_filter
+            <<: *version_filter
