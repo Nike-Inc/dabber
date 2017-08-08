@@ -22,11 +22,6 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
-  package:
-    <<: *defaults
-      - run:
-          name: build-binaries
-          command: npm run build
       # - run:
       #     name: test
       #     command: /build-scripts/lib-run-tests.sh
@@ -42,15 +37,19 @@ jobs:
       #     prefix: test-results
       # - store_test_results:
       #     path: test-results
+  package:
+    <<: *defaults
+      - run:
+          name: build-binaries
+          command: npm run build
       - persist_to_workspace:
-          root: ~/app # Must be relative path from working_directory
-          paths: # Must be relative path from root
+          root: ~/app
+          paths:
             - bin
   release:
     <<: *defaults
     steps:
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/app/bin
       - run:
           name: publish release
