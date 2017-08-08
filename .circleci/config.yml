@@ -36,9 +36,9 @@ jobs:
       # - store_test_results:
       #     path: test-results
       - persist_to_workspace:
-        root: workspace # Must be relative path from working_directory
-        paths: # Must be relative path from root
-          - echo-output
+          root: workspace # Must be relative path from working_directory
+          paths: # Must be relative path from root
+            - echo-output
   release:
     <<: *defaults
     steps:
