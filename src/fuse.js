@@ -21,7 +21,4 @@ let fuseBox = FuseBox.init({
 // you still have to call fuseBox.run()
 fuseBox.bundle(bundleName).instructions(`>lambda.js`).target('server')
 
-module.exports = {
-  bundleName,
-  bundle: fuseBox
-}
+fuseBox.run()

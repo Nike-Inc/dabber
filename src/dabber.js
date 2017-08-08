@@ -4,10 +4,12 @@ const co = require('co')
 const assert = require('assert')
 const AWS = require('aws-sdk')
 const uuid = require('uuid')
-const fuse = require('./fuse')
 const promisify = require('pify')
 const Zip = require('node-zip')
 const fs = require('fs')
+const path = require('path')
+
+const lambdaBundlePath = path.join(__dirname, '../assets/lambda.js')
 
 module.exports = {
   scheduleBackup,
@@ -172,10 +174,6 @@ function deploy (options) {
   const updateFunctionCode = promisify(lambda.updateFunctionCode.bind(lambda))
 
   return co(function * () {
-    const filePath = yield fuse.bundle.run().then(producer => {
-      return producer.bundles.get(fuse.bundleName).process.filePath
-    })
-
     let roleArn = options.role
     if (roleArn.indexOf('arn:aws:iam') === -1) {
       // lookup arn if only given role name
@@ -185,7 +183,7 @@ function deploy (options) {
     }
 
     var zipper = new Zip()
-    zipper.file('lambda.js', fs.readFileSync(filePath))
+    zipper.file('lambda.js', fs.readFileSync(lambdaBundlePath))
     var data = Buffer.from(zipper.generate({ base64: false, compression: 'DEFLATE' }), 'binary')
     let lambdaFunction = yield getLambdaFunction(options.region, options.name)
 

@@ -1,0 +1,62 @@
+defaults: &defaults
+  working_directory: ~/app
+  docker:
+    - image: nikengp/node6:v0.1
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install-npm-deps
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: build-binaries
+          command: npm run build
+      # - run:
+      #     name: test
+      #     command: /build-scripts/lib-run-tests.sh
+      # - run:
+      #     name: build report
+      #     command: /build-scripts/generate-test-report.sh
+      #     when: always
+      # - store_artifacts:
+      #     path: coverage
+      #     prefix: coverage
+      # - store_artifacts:
+      #     path: test-results
+      #     prefix: test-results
+      # - store_test_results:
+      #     path: test-results
+      - persist_to_workspace:
+        root: workspace # Must be relative path from working_directory
+        paths: # Must be relative path from root
+          - echo-output
+  release:
+    <<: *defaults
+      - image: nikengp/node6:v0.1
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/app/workspace
+      - run:
+          name: publish release
+          command: ghr -u Nike-Inc -r dabber bin/
+workflows:
+  version: 2
+  build-n-deploy:
+    jobs:
+      - build:
+      - release:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.v*/
