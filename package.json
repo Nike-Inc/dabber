@@ -9,7 +9,7 @@
     "test": "npm run style && npm run test:unit",
     "test:unit": "blue-tape test/**/**.js | ./node_modules/.bin/tap-spec",
     "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.js' -c \"npm run test:unit -s\"",
-    "build:lambda": "node src/fuse.js && cp build/lambda.js assets/lambda.js",
+    "build:lambda": "node src/fuse.js && mkdir -p assets && cp build/lambda.js assets/lambda.js",
     "build": "npm run build:lambda && pkg --out-path bin ."
   },
   "bin": {
