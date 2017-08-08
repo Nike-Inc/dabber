@@ -41,7 +41,6 @@ jobs:
           - echo-output
   release:
     <<: *defaults
-      - image: nikengp/node6:v0.1
     steps:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
