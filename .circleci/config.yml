@@ -36,18 +36,18 @@ jobs:
       # - store_test_results:
       #     path: test-results
       - persist_to_workspace:
-          root: ~/ # Must be relative path from working_directory
+          root: ~/app # Must be relative path from working_directory
           paths: # Must be relative path from root
-            - app
+            - bin
   release:
     <<: *defaults
     steps:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
-          at: ~/app
+          at: ~/app/bin
       - run:
           name: publish release
-          command: ghr -u Nike-Inc -r dabber bin/
+          command: ghr -u Nike-Inc -r dabber $CIRCLE_TAG bin/
 workflows:
   version: 2
   build-n-deploy:
@@ -59,3 +59,5 @@ workflows:
           filters:
             tags:
               only: /.v*/
+            branches:
+              ignore: /.*/
