@@ -39,6 +39,7 @@ jobs:
       #     path: test-results
   package:
     <<: *defaults
+    steps:
       - run:
           name: build-binaries
           command: npm run build
