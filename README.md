@@ -25,7 +25,7 @@ npm install dabber -g
 
 ***OR***
 
-Download native executables from the [latest release]((https://github.com/Nike-Inc/dabber/releases/latest)
+Download native executables from the [latest release](https://github.com/Nike-Inc/dabber/releases/latest)
 
 # How to use
 
