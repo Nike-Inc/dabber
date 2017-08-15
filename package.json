@@ -1,6 +1,6 @@
 {
   "name": "dabber",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "dynamo automated backup and restore",
   "main": "src/index.js",
   "scripts": {
@@ -8,7 +8,9 @@
     "style:fix": "standard \"src/**/*.js\" \"test/**/*.js\"--fix",
     "test": "npm run style && npm run test:unit",
     "test:unit": "blue-tape test/**/**.js | ./node_modules/.bin/tap-spec",
-    "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.js' -c \"npm run test:unit -s\""
+    "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.js' -c \"npm run test:unit -s\"",
+    "build:lambda": "node src/fuse.js && mkdir -p assets && cp build/lambda.js assets/lambda.js",
+    "build": "npm run build:lambda && pkg --out-path bin ."
   },
   "bin": {
     "dabber": "src/cli.js"
@@ -16,6 +18,9 @@
   "files": [
     "src"
   ],
+  "pkg": {
+    "assets": "assets/**/*"
+  },
   "engines": {
     "node": ">=4"
   },
@@ -33,7 +38,6 @@
     "aws-sdk": "^2.60.0",
     "co": "^4.6.0",
     "dynamodb-backup-restore": "^0.2.11",
-    "fuse-box": "^2.0.2-beta.1",
     "inquirer": "^3.1.0",
     "lambda-logger-node": "^2.0.2",
     "node-zip": "^1.1.1",
@@ -45,6 +49,8 @@
     "babel-eslint": "^7.2.3",
     "blue-tape": "^1.0.0",
     "chokidar-cli": "^1.2.0",
+    "fuse-box": "^2.2.1",
+    "pkg": "^4.2.2",
     "snazzy": "^7.0.0",
     "standard": "^10.0.2",
     "tap-spec": "^4.1.1"

@@ -23,6 +23,10 @@ Install with npm
 npm install dabber -g
 ```
 
+***OR***
+
+Download native executables from the [latest release](https://github.com/Nike-Inc/dabber/releases/latest)
+
 # How to use
 
 Dabber is two pieces: a CLI and a Lambda. The CLI can perform one-off backups and restores from your machine. It can also deploy a Lambda and create CloudWatch rules that trigger the lambda to perform scheduled backups. You only need to deploy ***one*** lambda for Dabber, per account; after that you can create as many backup schedules as you want against the same lambda, since each schedule is a trigger that describes the backup operation for the lambda.
