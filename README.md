@@ -1,3 +1,7 @@
+# DEPRECATED
+
+Dynamo DB now has native backup and restore functionality.
+
 # Dabber
 Dynamo Automated Backup, (Benevolently Ergonomic) Restore
 
